@@ -1,7 +1,7 @@
 """
 FOR LOCAL. 
 Read in true positives, negatives, and Majestic Million TN's. 
-Break off labels and set hyperparameters, tokenize and sequence qnames.
+Break off labels and set hyperparameters, tokenize and sequence query names.
 Get dummies for labels, create train/test split. 
 Create LSTM, run it, and save out. Save history in end comments. 
 """
@@ -37,24 +37,24 @@ tpgt = tpgt.dropna() #dupe check: tpgt.duplicated(subset='qname', keep='first').
 tpgt = tpgt.drop_duplicates(subset = 'qname', keep='first')
 
 #get TN’s + MM
-rzero_negs = pd.read_csv("Downloads/zero_negs_sample.csv", error_bad_lines=False, lineterminator='\n', header = 0, sep="\t", encoding='utf-8')
+zero_negs = pd.read_csv("Downloads/zero_negs_sample.csv", error_bad_lines=False, lineterminator='\n', header = 0, sep="\t", encoding='utf-8')
 
 #get empty cols for other features
-rzero_negs['variant'] = 0
-rzero_negs['label'] = 0
+zero_negs['variant'] = 0
+zero_negs['label'] = 0
 
 #drop na and dupes
-rzero_negs = rzero_negs.dropna()
-rzero_negs = rzero_negs.drop_duplicates(subset = 'qname', keep='first')
+zero_negs = zero_negs.dropna()
+zero_negs = zero_negs.drop_duplicates(subset = 'qname', keep='first')
 
 
 #get equal data samples
-rzero_negs = rzero_negs.sample(500000, replace=False, random_state=100) 
+zero_negs = zero_negs.sample(500000, replace=False, random_state=100) 
 tpgt = tpgt.sample(500000, replace=False, random_state=100) 
 
 
 #concat dfs, add MM, shuffle and drop na's/dupes again bc OCD
-all_data = pd.concat([rzero_negs, tpgt])
+all_data = pd.concat([zero_negs, tpgt])
 mm1 = pd.read_csv('Downloads/majestic_million.csv', error_bad_lines=False, header = 0, sep=",", encoding='utf-8', engine = 'python')
 mm1['label'] = 0
 mm1['variant'] = 0
@@ -82,11 +82,11 @@ MAX_NB_WORDS = 500000 #The maximum number of "words" to be used
 # Max number of words in seq
 MAX_SEQUENCE_LENGTH = 250
 
-# This is fixed value for dim of embed. seems standard ish?
+# This is fixed value for dim of embed. seems standard ish
 EMBEDDING_DIM = 128
 
 #do tokenization of chars in domains
-tokenizer = Tokenizer(num_words=MAX_NB_WORDS, lower=True, char_level=True)
+tokenizer = Tokenizer(num_words=MAX_NB_WORDS, lower=True, char_level=True) 
 
 #fit tokenizer
 tokenizer.fit_on_texts(all_data['qname'])
@@ -94,7 +94,7 @@ tokenizer.fit_on_texts(all_data['qname'])
 char_index = tokenizer.word_index #sanity check
 #print('Found %s unique tokens.' % len(word_index))
 
-#actually tokenize qnames
+#actually tokenize queries 
 x = tokenizer.texts_to_sequences(all_data['qname'].values)
 
 #pad things to be equal. possibly not necessary re woodbridge et al
